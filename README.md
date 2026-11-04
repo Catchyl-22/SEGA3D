@@ -11,9 +11,9 @@
 
 ## Overview
 
-SEGA3D combines offline segmentation candidates, language-conditioned selection, and loopback verification for 3D vision-language segmentation. This repository provides the core model components, ScanRefer training and evaluation, and separate reasoning segmentation configurations for ScanNet and Matterport3D.
+SEGA3D combines offline segmentation candidates, language-conditioned selection, and loopback verification for 3D vision-language segmentation. This repository provides the core model components, ScanRefer training and evaluation, and reasoning segmentation on Reason3D.
 
-Our workflow starts with referring segmentation on **ScanRefer**, followed by reasoning segmentation with **ScanNet** and **Matterport3D** scenes. ScanRefer uses `sega3d_t5_nv2`; reasoning segmentation uses `sega3d_t5_nv3`.
+Our workflow starts with referring segmentation on **ScanRefer**, followed by reasoning segmentation on **Reason3D**. ScanRefer uses `sega3d_t5_nv2`; reasoning segmentation uses `sega3d_t5_nv3`.
 
 ## Installation
 
@@ -130,42 +130,29 @@ Replace the checkpoint path with your trained model. The evaluation configuratio
 
 ## Reasoning segmentation
 
-After ScanRefer training, use the resulting checkpoint to initialize SEGA3D for reasoning segmentation. SEGA3D on ScanNet and Matterport3D uses separate dataset loaders and task configurations:
+After ScanRefer training, use the resulting checkpoint to initialize SEGA3D for reasoning segmentation on **Reason3D**.
 
-| Task | Dataset builder | Training configuration |
+| Dataset | Dataset builder | Training configuration |
 |---|---|---|
-| ScanNet reasoning segmentation | `sega3d_reasoning_scannet` | `lavis/projects/sega3d/train/sega3d-scannet-nv3.yaml` |
-| Matterport3D reasoning segmentation | `sega3d_reasoning_matterport` | `lavis/projects/sega3d/train/sega3d-matterport-nv3.yaml` |
+| Reason3D | `sega3d_reasoning_scannet` | `lavis/projects/sega3d/train/sega3d-scannet-nv3.yaml` |
 
-Prepare `train.json`, `val.json`, scene files, and offline predictions as described in [the reasoning data guide](docs/reasoning.md). The task configurations combine these dataset-specific loaders with the `sega3d_t5_nv3` model. Train each task with:
+Place the Reason3D annotations at `data/reasoning/train.json` and `data/reasoning/val.json`. Prepare the processed scenes and offline semantic predictions as described in the [data guide](docs/reasoning.md#scannet-scenes), and set their paths in `lavis/configs/datasets/sega3d_reasoning_scannet/defaults.yaml`. Train with:
 
 ```bash
-# SEGA3D on ScanNet
 python -m torch.distributed.run --nproc_per_node=8 --master_port=29501 \
   train.py --cfg-path lavis/projects/sega3d/train/sega3d-scannet-nv3.yaml \
   --options model.finetuned=./checkpoints/sega3d_scanrefer.pth
-
-# SEGA3D on Matterport3D
-python -m torch.distributed.run --nproc_per_node=8 --master_port=29501 \
-  train.py --cfg-path lavis/projects/sega3d/train/sega3d-matterport-nv3.yaml \
-  --options model.finetuned=./checkpoints/sega3d_scanrefer.pth
 ```
 
-Evaluate the respective task checkpoints:
+Evaluate the trained Reason3D checkpoint with:
 
 ```bash
 python -m torch.distributed.run --nproc_per_node=1 --master_port=29501 \
   train.py --cfg-path lavis/projects/sega3d/val/sega3d-scannet-nv3.yaml \
   --options model.finetuned=./checkpoints/sega3d_reasoning_scannet_nv3.pth
-
-python -m torch.distributed.run --nproc_per_node=1 --master_port=29501 \
-  train.py --cfg-path lavis/projects/sega3d/val/sega3d-matterport-nv3.yaml \
-  --options model.finetuned=./checkpoints/sega3d_reasoning_matterport_nv3.pth
 ```
 
-Replace these checkpoint paths with the nv3 weights from the corresponding runs. Training outputs are saved under `outputs/sega3d_reasoning_<dataset>_train/`; nv3 evaluation outputs are saved under `outputs/sega3d_reasoning_<dataset>_nv3_eval/`.
-
-The configuration filenames specify the dataset and model variant explicitly: `sega3d-scannet-nv3.yaml` and `sega3d-matterport-nv3.yaml` use nv3; the corresponding `nv2` files use nv2. ScanRefer uses `sega3d-scanrefer-nv2.yaml`. See [the reasoning guide](docs/reasoning.md) for configuration checks.
+Replace the checkpoint path with your trained nv3 weights. Training outputs are saved under `outputs/sega3d_reasoning_scannet_train/`; evaluation outputs are saved under `outputs/sega3d_reasoning_scannet_nv3_eval/`.
 
 ## Code structure
 
@@ -176,5 +163,3 @@ The central registration table is [lavis/sega3d_registry.py](lavis/sega3d_regist
 Supported by Shanghai Artificial Intelligence Laboratory.
 
 Our implementation builds on the upstream project credited in [third-party notices](THIRD_PARTY_NOTICES.md), [LAVIS](https://github.com/salesforce/LAVIS), and [Pointcept](https://github.com/Pointcept/Pointcept). We thank the authors for sharing their work. See [third-party notices](THIRD_PARTY_NOTICES.md) and [licenses](licenses/) for the included license texts.
-
-We will continue to update this repository with additional code and resources.
