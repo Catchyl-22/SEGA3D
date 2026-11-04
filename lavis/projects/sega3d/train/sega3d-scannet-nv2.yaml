@@ -1,0 +1,95 @@
+# SEGA3D scannet-nv2: train.
+model:
+  arch: sega3d_t5_nv2
+  model_type: pretrain_flant5xl
+  use_grad_checkpoint: false
+  mask_embedding: false
+  point_encoder_cfg:
+    input_channel: 6
+    media: 32
+    normalize_before: true
+    return_blocks: true
+    fix_module:
+    - input_conv
+    - unet
+    - output_layer
+    pretrained: ./checkpoints/sp_unet_backbone.pth
+  mask_decoder_cfg:
+    media: 32
+    num_layer: 6
+    d_model: 256
+    d_text: 512
+    nhead: 8
+    hidden_dim: 1024
+    dropout: 0.0
+    activation_fn: gelu
+    attn_mask: true
+  mask_decoder_coarse:
+    media: 32
+    num_layer: 6
+    d_model: 256
+    d_text: 512
+    nhead: 8
+    hidden_dim: 1024
+    dropout: 0.0
+    activation_fn: gelu
+    attn_mask: true
+  seg_criterion_cfg:
+    loss_weight:
+    - 5.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 0.5
+    - 1.0
+    - 1.0
+    loss_fun: focal
+  pred_confidence: 0.5
+  load_finetuned: true
+  finetuned: ./checkpoints/sega3d_scanrefer.pth
+  eval_topk: 4
+  save_topk_diagnostics: false
+datasets:
+  sega3d_reasoning_scannet:
+    text_processor:
+      train:
+        name: blip_question
+        prompt: ''
+      eval:
+        name: blip_question
+    build_info:
+      annotations:
+        train:
+          storage: ./data/reasoning/train.json
+        val:
+          storage: ./data/reasoning/val.json
+run:
+  task: sega3d_seg
+  lr_sched: linear_warmup_cosine_lr
+  init_lr: 0.0001
+  min_lr: 1.0e-05
+  warmup_lr: 1.0e-08
+  warmup_steps: 1000
+  weight_decay: 0.05
+  max_epoch: 100
+  batch_size_train: 24
+  batch_size_eval: 1
+  num_workers: 4
+  accum_grad_iters: 1
+  max_len: 40
+  min_len: 1
+  num_beams: 5
+  inference_method: generate
+  seed: 42
+  output_dir: outputs/sega3d_reasoning_scannet_train
+  amp: true
+  evaluate: false
+  train_splits:
+  - train
+  valid_splits:
+  - val
+  test_splits: []
+  device: cuda
+  world_size: 4
+  dist_url: env://
+  distributed: true

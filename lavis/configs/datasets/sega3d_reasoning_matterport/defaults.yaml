@@ -1,0 +1,13 @@
+datasets:
+  sega3d_reasoning_matterport:
+    data_type:
+    - points
+    build_info:
+      annotations: {}
+      points:
+        storage: ./data
+      candidates:
+        scannet_semantic: ./data/candidates/reasoning/scannet_semantic
+        matterport_instances: ./data/candidates/reasoning/matterport_instances
+        room_types: ./data/matterport/mp3d_room_type.json
+        matterport_semantic: ./data/candidates/reasoning/matterport_semantic

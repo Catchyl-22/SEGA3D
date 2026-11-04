@@ -1,0 +1,2 @@
+# Keep Bash entry points executable with Linux line endings.
+*.sh text eol=lf

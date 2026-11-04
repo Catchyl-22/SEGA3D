@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+build/
+dist/
+.venv/
+.env
+data/
+checkpoints/
+outputs/
+refer_preds/
+eval_history*/
+wandb/
+*.zip
+*.rar

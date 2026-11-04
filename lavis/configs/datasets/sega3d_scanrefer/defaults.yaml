@@ -1,0 +1,11 @@
+datasets:
+  sega3d_scanrefer:
+    data_type: [points]
+    build_info:
+      annotations: {}
+      points:
+        storage: ./data
+      candidates:
+        scannet20: ./data/candidates/scannet20
+        scannet200: ./data/candidates/scannet200
+        whitelist: ./data/candidates/whitelist_standard.txt

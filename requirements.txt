@@ -1,0 +1,23 @@
+# Install PyTorch, torchvision, spconv, torch-scatter and torch-cluster for the
+# selected CUDA environment before installing these Python dependencies.
+-c constraints.txt
+transformers==4.51.0
+gorilla-core
+opencv-python-headless==4.5.5.64
+numpy==1.24.0
+pandas
+scipy==1.15.3
+Pillow
+PyYAML
+tqdm
+omegaconf
+iopath
+webdataset
+decord
+einops
+timm==1.0.22
+fairscale==0.4.13
+nvidia-ml-py
+packaging
+requests
+sentencepiece
